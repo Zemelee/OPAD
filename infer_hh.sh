@@ -11,7 +11,7 @@ mkdir -p $output_dir
 mkdir -p $output_dir_log
 
 python \
-  infer_hh_posterior.py \
+  infer_hh.py \
   --conv_type llama2 \
   --model_path /private/model/mistralai/Mistral-7B-Instruct-v0.1 \
   --principle_id $p_id \
