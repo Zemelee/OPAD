@@ -12,7 +12,7 @@ Works with LLaMA-2 and Vicuna models out of the box.
 
 **Supported Datasets**:
 
-HH-RLHF, Summarization, DSP, and PSOUPs datasets.
+[HH-RLHF](https://huggingface.co/datasets/Anthropic/hh-rlhf), Summarization, DSP, and [PSOUPs](https://huggingface.co/datasets/RiverDong/psoups) datasets.
 
 ## Getting Started
 ### Prerequisites
@@ -23,11 +23,4 @@ pip install -r requirements.txt
 ```
 bash infer_hh.sh
 ```
-### Change Models:
-Modify the conv_type in the shell scripts and add corresponding conversation adapters in conversation.py.
-### Experiment with Datasets: 
-The codebase is extensible to other datasets by adapting the input format and principles.
-
-
-### Acknowledgments
-This code is built upon the [Linear Alignment](https://github.com/Wizardcoast/Linear_Alignment?tab=readme-ov-file) repository. For more details on the foundational work, please refer to the original repo.
+官方论文源码的复现，infer_hh.py 可直接运行。

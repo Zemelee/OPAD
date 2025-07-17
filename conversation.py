@@ -19,7 +19,7 @@ class Llama2ConversationAdapter(ConversationBaseAdapter):
         self.role = ["[INST] ", " [/INST] "]
         self.sys_template = """<<SYS>>\nYou are a helpful, respectful and honest assistant. 
                 Always answer as helpfully as possible, while being safe.{}\n<</SYS>>\n\n {} """
-
+    # (human q ai answer human q) = 6
     def sub_role(self, dialogue_list):
         for i in range(0, len(dialogue_list), 2):
             role_index = int(i / 2) % 2
