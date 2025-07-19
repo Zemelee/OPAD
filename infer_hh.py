@@ -149,13 +149,13 @@ if __name__ == "__main__":
                     # 取最后一个 token 的输出
                     next_token_logit = logits[:, -1, :]
                     # 转成概率
-                    next_token_probs = F.softmax(next_token_logit / 1.0, dim=-1)
+                    next_probs = F.softmax(next_token_logit / 1.0, dim=-1)
                 else:
                     # logits.shape = [bs, seq_len, vocab_size]
                     # mean(1)对第一个维度取平均
                     # dim=-1对最后一个维度操作
                     # unsqueeze(-1) 在最后一维增加一个维度
-                    # 上一步的有原则预测
+                    # # 计算带原则的输出=============
                     logits_old = logits.clone()
                     output = model(
                         # inputs 要求[bs, seq_len]
@@ -166,9 +166,10 @@ if __name__ == "__main__":
                     )
                     logits = output.logits  # 新的有原则预测
                     past_key_values_in = output.past_key_values
-                    # 计算 KL reward
+                    # 计算当前和历史的 带原则 对数概率
                     log_prob1 = F.log_softmax(logits.mean(1), dim=-1)
                     log_prob2 = F.log_softmax(logits_old.mean(1), dim=-1)
+                    # 累加历史信息
                     log_prob = log_prob1 + log_prob2
                     # 计算不带原则的输出=============
                     logits_no_old = logits_no.clone()
@@ -187,16 +188,14 @@ if __name__ == "__main__":
                     log_prob_no = log_prob1 + log_prob2  # 无原则模型的“当前”预测
                     next_token_logit = logits[:, -1, :] # [bs, seq_len, vocab_size]
                     # 计算“带原则”与“不带原则”的概率差
-                    neg_energy = 1.0 * (log_prob - log_prob_no)
+                    neg_energy = 1.0 * (log_prob - log_prob_no) # 1.0及超参
                     # reward 调整生成概率
-                    next_token_probs = F.softmax(
-                        next_token_logit / 1.0, dim=-1
-                    ) * torch.exp(neg_energy)
-                    next_token_probs = next_token_probs / next_token_probs.sum(
-                        dim=-1, keepdim=True
-                    )
+                    next_probs = F.softmax(next_token_logit / 1.0, dim=-1) 
+                    next_probs = next_probs* torch.exp(neg_energy)
+                    # 归一化，相当于应用1/z
+                    next_probs = next_probs / next_probs.sum(dim=-1, keepdim=True)
             # 选择概率最大的 toke作为下一个token
-            next_token_id = torch.argmax(next_token_probs, dim=-1)
+            next_token_id = torch.argmax(next_probs, dim=-1)
             # 新增token的掩码为1，表示“需要被关注”
             new_attention_values = torch.ones(
                 (current_att.shape[0], 1), dtype=current_att.dtype, device=dev
